@@ -1,0 +1,696 @@
+PROBLEM STATEMENT:
+
+As a part of your end year networking project, you are required to design and implement Vic Modern Hotel network. The hotel has three floors; in the first floor there three departments (Reception, store and Logistics), in the second floor there are three departments (Finance, HR and Sales/Marketing), while the third floor hosts the IT and Admin. Therefore, the following are part of the considerations during the design and implementation
+1. There should be three routers connecting each floor (all placed in the server room in
+IT department)
+2. All routers should be connected to each other using serial DCE cable
+3. The network between the routers should be 10.10.10.0/30, 10.10.10.4/30,10.10.10.8/30
+4. Each floor is expected to have one switch (placed in the respective floor).
+5. Each floor is expected to have WIFI networks connected to laptops and phones
+6. Each department is expected to have a printer
+7. Each department is expected to be in different VLAN with the following details
+
+
+1st Floor
+> Reception- VLAN 80, Network of 192.168.8.0/24
+> Store- VLAN 70, Network of 192.168.7.0/ 24
+> Logistics- VLAN 60, Network of 192.168.6.0/24
+
+2nd Floor;
+> Finance- VLAN 50, Network of 192.168.5.0/24
+> HR- VLAN 40, Network of 192.168.4.0/24
+> Sales- VLAN 30, Network of 192.168.3.0/24
+
+
+3rd t Floor;
+> Admin- VLAN 20, Network of 192.168.2.0/24
+> IT- VLAN 10, Network of 192.168.1.0/24
+
+
+8. Use OSPF as the routing protocol to advertise routes
+9. All devices in the network are-expected to obtain IP address dynamically with their
+respective router configured as the DHCP server
+10. All the devices in the network are expected to communicate with each other
+11.Configure SSH in all the routers for remote login
+12. In IT department, add PC called Test-PC to port fa0/2 and use it to test remote login
+13. Configure port security to admin-dept switch to allow only Test-PC to access port fa0/2
+(use sticky method to obtain mac-address with violation mode of shutdown.)
+
+solution:
+
+first design the network topology as per the requirement.
+
+Then comes to the configuration part:
+
+A serial DCE cable is needed when you want to connect a DTE (Data Terminal Equipment) device to a DCE (Data Circuit-Terminating Equipment) device in a serial communication setup. Here’s why it's used:
+
+1. Establishing Communication Between DTE & DCE
+In networking and telecommunications, DCE devices (like modems or CSU/DSUs) are responsible for providing clock signals to DTE devices (like routers, PCs, or terminals).
+The DCE cable ensures proper data transmission between these devices.
+2. Clock Signal Control
+DCE devices provide the clocking signal, which is required for synchronized data transmission over a serial interface.
+DTE devices receive the clock signal to send and receive data at the correct speed.
+3. Used in WAN & Networking Configurations
+In Cisco router labs, a DCE serial cable is often used to create a point-to-point connection between two routers.
+Typically, one router is configured as DCE (providing clock) and the other as DTE (receiving clock) to simulate real-world WAN links.
+4. Standard Serial Interfaces
+Used with interfaces like RS-232, V.35, RS-449, and RS-530 for serial communication in industrial, networking, and telecom applications.
+Connects routers to modems, CSU/DSUs, or other networking equipment.
+Common Example: Cisco Serial Cable
+DCE end has a female connector and supplies the clock signal.
+DTE end has a male connector and receives the clock signal.
+Used in WAN simulations in networking labs.
+
+1st floor DCE interfaces
+
+Router#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Router(config)#int se0/0/0
+Router(config-if)#no sh
+
+Router(config-if)#
+%LINK-5-CHANGED: Interface Serial0/0/0, changed state to up
+
+Router(config-if)#clo
+%LINEPROTO-5-UPDOWN: Line protocol on Interface Serial0/0/0, changed state to up
+
+% Incomplete command.
+Router(config-if)#clock rate 64000
+This command applies only to DCE interfaces
+Router(config-if)#int se0/0/1
+Router(config-if)#no sh
+
+Router(config-if)#
+%LINK-5-CHANGED: Interface Serial0/0/1, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface Serial0/0/1, changed state to up
+
+Router(config-if)#clock rate 64000
+This command applies only to DCE interfaces
+Router(config-if)#ex
+Router(config)#int gig0/0
+Router(config-if)#no sh
+
+Router(config-if)#
+%LINK-5-CHANGED: Interface GigabitEthernet0/0, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0, changed state to up
+
+Router(config-if)#exit
+Router(config)#do wr mem
+Building configuration...
+[OK]
+Router(config)#
+
+2nd floor:
+
+Router#config t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Router(config)#int se0/0/0
+Router(config-if)#no sh
+
+Router(config-if)#
+%LINK-5-CHANGED: Interface Serial0/0/0, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface Serial0/0/0, changed state to up
+
+Router(config-if)#clock rate 64000
+This command applies only to DCE interfaces
+Router(config-if)#int se0/0/1
+Router(config-if)#no sh
+
+%LINK-5-CHANGED: Interface Serial0/0/1, changed state to down
+Router(config-if)#clock rate 64000
+Router(config-if)#ex
+Router(config)#int gig0/0
+Router(config-if)#no sh
+
+Router(config-if)#
+%LINK-5-CHANGED: Interface GigabitEthernet0/0, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0, changed state to up
+
+Router(config-if)#ex
+Router(config)#do wr mem
+Building configuration...
+[OK]
+Router(config)#
+%LINK-5-CHANGED: Interface Serial0/0/1, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface Serial0/0/1, changed state to up
+
+
+3rd floor:
+
+Router#config t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Router(config)#int se0/0/0
+Router(config-if)#no sh
+
+%LINK-5-CHANGED: Interface Serial0/0/0, changed state to down
+Router(config-if)#int se0/0/1
+Router(config-if)#no sh
+
+%LINK-5-CHANGED: Interface Serial0/0/1, changed state to down
+Router(config-if)#int gig0/0
+Router(config-if)#no sh
+
+Router(config-if)#
+%LINK-5-CHANGED: Interface GigabitEthernet0/0, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0, changed state to up
+
+Router(config-if)#int se0/0/0
+Router(config-if)#clock rate 64000
+Router(config-if)#int se0/0/1
+Router(config-if)#clock rate 64000
+Router(config-if)#int gig0/0
+Router(config-if)#clock rate 64000
+                   ^
+% Invalid input detected at '^' marker.
+	
+Router(config-if)#
+Router(config-if)#exit
+Router(config)#do wr mem
+Building configuration...
+[OK]
+Router(config)#
+%LINK-5-CHANGED: Interface Serial0/0/0, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface Serial0/0/0, changed state to up
+
+%LINK-5-CHANGED: Interface Serial0/0/1, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface Serial0/0/1, changed state to up
+
+
+then do the vlan configuration on switches:
+Switch>en
+Switch#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Switch(config)#int fa0/2-3
+                       ^
+% Invalid input detected at '^' marker.
+	
+Switch(config)#int range fa0/2-3
+Switch(config-if-range)#switchport mode access	
+Switch(config-if-range)#switchport access vlan 80
+% Access VLAN does not exist. Creating vlan 80
+Switch(config-if-range)#
+Switch(config-if-range)#
+Switch(config-if-range)#int range fa0/4-5
+Switch(config-if-range)#switchport mode access
+Switch(config-if-range)#switchport access vlan 70
+% Access VLAN does not exist. Creating vlan 70
+Switch(config-if-range)#int range fa0/6-7
+Switch(config-if-range)#switchport mode access
+Switch(config-if-range)#switchport access vlan 60
+% Access VLAN does not exist. Creating vlan 60
+Switch(config-if-range)#exit
+Switch(config)#do wr mem
+Building configuration...
+[OK]
+Switch(config)#
+
+for VLAN communication:
+
+Switch(config)#int fa0/1
+Switch(config-if)#switchport mode trunk
+
+Switch(config-if)#
+%LINEPROTO-5-UPDOWN: Line protocol on Interface FastEthernet0/1, changed state to down
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface FastEthernet0/1, changed state to up
+
+Switch(config-if)#ex
+Switch(config)#do wr
+Building configuration...
+[OK]
+Switch(config)#
+
+
+switch 2 :
+
+
+Switch>
+Switch>en
+Switch#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Switch(config)#int range fa0/2-3
+Switch(config-if-range)#switchport mode access
+Switch(config-if-range)#switchport access vlan 30
+% Access VLAN does not exist. Creating vlan 30
+Switch(config-if-range)#int range fa0/4-5
+Switch(config-if-range)#switchport mode access
+Switch(config-if-range)#switchport access vlan 40
+% Access VLAN does not exist. Creating vlan 40
+Switch(config-if-range)#int range fa0/6-7
+Switch(config-if-range)#switchport mode access
+Switch(config-if-range)#switchport access vlan 50
+% Access VLAN does not exist. Creating vlan 50
+Switch(config-if-range)#exit
+Switch(config)#int fa0/1
+Switch(config-if)#switchport mode trunk
+
+Switch(config-if)#
+%LINEPROTO-5-UPDOWN: Line protocol on Interface FastEthernet0/1, changed state to down
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface FastEthernet0/1, changed state to up
+
+Switch(config-if)#ex
+Switch(config)#do wr mem
+Building configuration...
+[OK]
+Switch(config)#
+
+
+switch 3:
+
+
+Switch>en
+Switch#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Switch(config)#int range fa0/2-3
+Switch(config-if-range)#switchport mode access
+Switch(config-if-range)#switchport access vlan 20
+% Access VLAN does not exist. Creating vlan 20
+Switch(config-if-range)#int range fa0/4-5
+Switch(config-if-range)#switchport mode access
+Switch(config-if-range)#switchport access vlan 10
+% Access VLAN does not exist. Creating vlan 10
+Switch(config-if-range)#ex
+Switch(config)#int fa0/1
+Switch(config-if)#switchport mode trunk
+
+Switch(config-if)#
+%LINEPROTO-5-UPDOWN: Line protocol on Interface FastEthernet0/1, changed state to down
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface FastEthernet0/1, changed state to up
+
+Switch(config-if)#ex
+Switch(config)#do wr mem
+Building configuration...
+[OK]
+Switch(config)#
+
+Ip configuration on router interfaces:
+
+F1 router:
+
+Router>en
+Router#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Router(config)#int se0/0/0
+Router(config-if)#ip address 10.10.10.5 255.255.255.252
+Router(config-if)#int se0/0/1
+Router(config-if)#ip address 10.10.10.9 255.255.255.252
+Router(config-if)#ex
+Router(config)#do wr mem
+
+on F2 router:
+
+
+Router(config)#int se0/0/1
+Router(config-if)#ip address 10.10.10.10 255.255.255.252
+Router(config-if)#int se0/0/0
+Router(config-if)#ip address 10.10.10.1 255.255.255.252
+
+on F3 router:
+
+Router(config)#int se0/0/1
+Router(config-if)#ip address 10.10.10.6 255.255.255.252
+Router(config-if)#int se0/0/0
+Router(config-if)#ip address 10.10.10.2 255.255.255.252
+Router(config-if)#ex
+Router(config)#do wr mem
+Building configuration...
+[OK]
+
+
+##dhcp server mostly goes hand in hand with inter vlan routing
+
+
+
+
+1. Why DHCP is Needed in an Inter-VLAN Setup?
+Each VLAN represents a separate subnet. Devices in these VLANs need IP addresses, subnet masks, and gateways to communicate. Instead of manually assigning IPs (static addressing), a DHCP server dynamically assigns IPs to clients in different VLANs.
+
+2. The Challenge: DHCP Server and VLANs
+A DHCP server is usually on one VLAN (subnet), but clients are spread across multiple VLANs. Since DHCP uses broadcast messages, which normally don’t cross VLAN boundaries, devices in other VLANs wouldn’t receive an IP.
+
+3. Solution: DHCP Relay (ip helper-address)
+To allow DHCP clients in different VLANs to get an IP from the DHCP server, we use a feature called DHCP relay:
+
+The Inter-VLAN routing device (Layer 3 switch or router) acts as a relay agent.
+The command ip helper-address <DHCP Server IP> is applied to the SVI (Switched Virtual Interface) of each VLAN.
+This forwards DHCP requests from VLANs to the DHCP server, even if it’s on a different network.
+4. Inter-VLAN Routing Role
+Since VLANs can’t communicate by default, Inter-VLAN routing (using a Layer 3 switch or Router-on-a-Stick) is needed.
+The router or L3 switch routes DHCP traffic between VLANs.
+It ensures that devices in different VLANs can communicate after getting an IP from DHCP.
+Example Setup
+VLAN 10 (192.168.10.0/24) – PCs
+VLAN 20 (192.168.20.0/24) – Phones
+DHCP Server in VLAN 100 (192.168.100.0/24)
+
+
+Conclusion
+DHCP and Inter-VLAN routing work together because:
+✅ DHCP needs to assign IPs to devices across VLANs.
+✅ VLANs don’t communicate by default, so Inter-VLAN routing enables traffic between them.
+✅ DHCP Relay (ip helper-address) ensures clients in different VLANs get IPs from a centralized DHCP server.
+
+
+A router can handle traffic for multiple VLANs using subinterfaces. Each subinterface is assigned a VLAN using encapsulation dot1Q <VLAN-ID>.
+✅ encapsulation dot1Q is required for VLAN tagging.
+✅ Used on trunk ports (switch-to-switch) and Router-on-a-Stick setups.
+✅ Allows inter-VLAN routing when used on router subinterfaces.
+✅ Native VLAN traffic is untagged unless explicitly set.
+
+INTER VLAN Routing on F1router:
+Router>en
+Router#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Router(config)#int gig0/0.80
+Router(config-subif)#
+%LINK-5-CHANGED: Interface GigabitEthernet0/0.80, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0.80, changed state to up
+
+Router(config-subif)#encapsulation dot1q 80
+Router(config-subif)#ip address 192.168.8.1 255.255.255.0
+Router(config-subif)#ex
+Router(config)#int gig0/0.70
+Router(config-subif)#
+%LINK-5-CHANGED: Interface GigabitEthernet0/0.70, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0.70, changed state to up
+
+Router(config-subif)#encapsulation dot1q 70
+Router(config-subif)#ip address 192.168.7.1 255.255.255.0
+Router(config-subif)#ex
+Router(config)#int gig0/0.60
+Router(config-subif)#
+%LINK-5-CHANGED: Interface GigabitEthernet0/0.60, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0.60, changed state to up
+
+Router(config-subif)#encapsulation dot1q 60
+Router(config-subif)#ip address 192.168.6.1 255.255.255.0
+Router(config-subif)#ex
+Router(config)#
+
+
+enable dhcp by providing the command : service dhcp
+
+Router(config)#service dhcp
+Router(config)#ip dhcp pool reception
+Router(dhcp-config)#network 192.168.8.0 255.255.255.0
+Router(dhcp-config)#efault-router 192.168.8.1
+                     ^
+% Invalid input detected at '^' marker.
+	
+Router(dhcp-config)#default-router 192.168.8.1
+Router(dhcp-config)#dns-server 192.168.8.1
+Router(dhcp-config)#ex
+Router(config)#
+Router(config)#ip dhcp pool store
+Router(dhcp-config)#network 192.168.7.0 255.255.255.0
+Router(dhcp-config)#default-router 192.168.7.1
+Router(dhcp-config)#dns-server 192.168.7.1
+Router(dhcp-config)#ex
+Router(config)#ip dhcp pool logistics
+Router(dhcp-config)#network 192.168.6.0 255.255.255.0
+Router(dhcp-config)#default-router 192.168.6.1
+Router(dhcp-config)#dns-server 192.168.6.1
+Router(dhcp-config)#ex
+Router(config)#wr mem
+               ^
+% Invalid input detected at '^' marker.
+	
+Router(config)#do wr mem
+Building configuration...
+[OK]
+Router(config)#
+
+do above this to provide the ip address dynamically to the end devices. Like this do on the other routers.
+
+
+F2 router configs on assigning Dhcp :
+
+Router>
+Router>
+Router>en
+Router#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Router(config)#int gig0/0.30
+Router(config-subif)#
+%LINK-5-CHANGED: Interface GigabitEthernet0/0.30, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0.30, changed state to up
+
+Router(config-subif)#encapsulation dot1q 30
+Router(config-subif)#ip address 192.168.3.1 255.255.255.0
+Router(config-subif)#ex
+Router(config)#int gig0/0.40
+Router(config-subif)#
+%LINK-5-CHANGED: Interface GigabitEthernet0/0.40, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0.40, changed state to up
+
+Router(config-subif)#encapsulation dot1q 40
+Router(config-subif)#ip address 192.168.4.1 255.255.255.0
+Router(config-subif)#ex
+Router(config)#int gig0/0.50
+Router(config-subif)#
+%LINK-5-CHANGED: Interface GigabitEthernet0/0.50, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0.50, changed state to up
+
+Router(config-subif)#encapsulation dot1q 50
+Router(config-subif)#ip address 192.168.5.1 255.255.255.0
+Router(config-subif)#ex
+Router(config)#service dhcp
+Router(config)#ip dhcp pool sales
+Router(dhcp-config)#network 192.168.3.0 255.255.255.0
+Router(dhcp-config)#default-router 192.168.3.1
+Router(dhcp-config)#dns-server 192.168.3.1
+Router(dhcp-config)#ex
+Router(config)#ip dhcp pool HR
+Router(dhcp-config)#network 192.168.4.0 255.255.255.0
+Router(dhcp-config)#default-router 192.168.4.1
+Router(dhcp-config)#dns-server 192.168.4.1
+Router(dhcp-config)#ex
+Router(config)#ip dhcp pool Finance
+Router(dhcp-config)#network 192.168.5.0 255.255.255.0
+Router(dhcp-config)#default-router 192.168.5.1
+Router(dhcp-config)#dns-server 192.168.5.1
+Router(dhcp-config)#ex
+Router(config)#do wr mem
+Building configuration...
+[OK]
+Router(config)#
+
+ospf configs on F1router:
+
+Router#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Router(config)#router ospf 10
+Router(config-router)#network 10.10.10.4 255.255.255.252 area 0
+Router(config-router)#network 10.10.10.8 255.255.255.252 area 0
+Router(config-router)#network 192.168.8.0 255.255.255.0 area 0
+Router(config-router)#network 192.168.7.0 255.255.255.0 area 0
+Router(config-router)#network 192.168.6.0 255.255.255.0 area 0
+Router(config-router)#ex
+Router(config)#do wr mem
+Building configuration...
+[OK]
+Router(config)#
+
+on F2router:
+Router>
+Router>en
+Router#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Router(config)#router ospf 10
+Router(config-router)#network 10.10.10.0 255.255.255.252
+% Incomplete command.
+Router(config-router)#network 10.10.10.0 255.255.255.252 area 0
+Router(config-router)#network 10.10.10.8 255.255.255.252 area 0
+Router(config-router)#network 192.168
+02:30:17: %OSPF-5-ADJCHG: Process 10, Nbr 192.168.8.1 on Serial0/0/1 from LOADING to FULL, Loading Done
+Router(config-router)#network 192.168.3.0 255.255.255.0 area 0
+Router(config-router)#network 192.168.4.0 255.255.255.0 area 0
+Router(config-router)#network 192.168.5.0 255.255.255.0 area 0
+Router(config-router)#ex
+Router(config)#do wr mem
+Building configuration...
+
+0n F3Router:
+
+Router>
+Router>
+Router>en
+Router#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Router(config)#router ospf 10
+Router(config-router)#network 10.10.10.0 255.255.255.252 area 0
+Router(config-router)#network 10.10.10.0 255.255.255.252 area 0
+02:33:12: %OSPF-5-ADJCHG: Process 10, Nbr 192.168.5.1 on Serialrouter ospf 10
+Router(config-router)#network 10.10.10.4 255.255.255.252 area 0
+Router(config-router)#
+02:33:47: %OSPF-5-ADJCHG: Process 10, Nbr 192.168.8.1 on Serial0/0/1 from LOADING to FULL, Loading Done
+
+Router(config-router)#network 192.168.1.0 255.255.255.0 area 0
+Router(config-router)#network 192.168.2.0 255.255.255.0 area 0
+Router(config-router)#exit
+Router(config)#do wr mem
+Building configuration...
+[OK]
+Router(config)#
+
+
+
+ssh configuration on router:
+
+Router>
+Router>
+Router>en
+Router#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Router(config)#hostname F1-Router
+F1-Router(config)#ip domain-name dev
+F1-Router(config)#username dev password dev
+F1-Router(config)#crypto key generate rsa
+The name for the keys will be: F1-Router.dev
+Choose the size of the key modulus in the range of 360 to 4096 for your
+  General Purpose Keys. Choosing a key modulus greater than 512 may take
+  a few minutes.
+
+How many bits in the modulus [512]: 1024
+% Generating 1024 bit RSA keys, keys will be non-exportable...[OK]
+
+F1-Router(config)#
+*Mar 1 3:12:12.803: %SSH-5-ENABLED: SSH 1.99 has been enabled
+
+
+
+
+enable interface on vty interface:
+
+F1-Router(config)#line vty 0 15
+F1-Router(config-line)#login local
+F1-Router(config-line)#transport input ssh
+F1-Router(config-line)#
+F1-Router(config-line)#exit
+F1-Router(config)#do wr mem
+Building configuration...
+[OK]
+F1-Router(config)#
+
+
+like this do this on the other routers.
+
+for F2Router:
+
+
+with CNTL/Z.
+Router(config)#hostname F2-Router
+F2-Router(config)#ip domain-name mio
+F2-Router(config)#username mio password mio
+F2-Router(config)#crypto key generate rsa
+The name for the keys will be: F2-Router.mio
+Choose the size of the key modulus in the range of 360 to 4096 for your
+  General Purpose Keys. Choosing a key modulus greater than 512 may take
+  a few minutes.
+
+How many bits in the modulus [512]: 1024
+% Generating 1024 bit RSA keys, keys will be non-exportable...[OK]
+
+F2-Router(config)#
+*Mar 1 3:18:35.579: %SSH-5-ENABLED: SSH 1.99 has been enabled
+F2-Router(config)#line vty 0 15
+F2-Router(config-line)#login local
+F2-Router(config-line)#transport input ssh
+F2-Router(config-line)#exit
+F2-Router(config)#do wr mem
+Building configuration...
+[OK]
+F2-Router(config)#
+
+for F3Router:
+
+Router>en
+Router#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Router(config)#hostname F3-Router
+F3-Router(config)#ip domain-name mami
+F3-Router(config)#username mami password mami
+F3-Router(config)#crypto key generate rsa
+The name for the keys will be: F3-Router.mami
+Choose the size of the key modulus in the range of 360 to 4096 for your
+  General Purpose Keys. Choosing a key modulus greater than 512 may take
+  a few minutes.
+
+How many bits in the modulus [512]: 1024
+% Generating 1024 bit RSA keys, keys will be non-exportable...[OK]
+
+F3-Router(config)#
+*Mar 1 3:22:54.955: %SSH-5-ENABLED: SSH 1.99 has been enabled
+F3-Router(config)#line vty 0 15
+F3-Router(config-line)#login local
+F3-Router(config-line)#transport input ssh
+F3-Router(config-line)#ex
+% Ambiguous command: "ex"
+F3-Router(config-line)#exit
+F3-Router(config)#do wr mem
+Building configuration...
+[OK]
+F3-Router(config)#
+
+
+ssh -l (hostname)(interface ip)
+
+
+port security for fa0/2:
+
+Switch(config)#int fa0/2
+Switch(config-if)#switchport port-security
+Switch(config-if)#switchport port-security maximum 1
+Switch(config-if)#switchport port-security mac-address sticky
+Switch(config-if)#switchport port-security violation ?
+  protect   Security violation protect mode
+  restrict  Security violation restrict mode
+  shutdown  Security violation shutdown mode
+Switch(config-if)#switchport port-security violation ?
+  protect   Security violation protect mode
+  restrict  Security violation restrict mode
+  shutdown  Security violation shutdown mode
+Switch(config-if)#switchport port-security violation ?
+  protect   Security violation protect mode
+  restrict  Security violation restrict mode
+  shutdown  Security violation shutdown mode
+Switch(config-if)#switchport port-security violation shutdown
+Switch(config-if)#do wr mem
+Building configuration...
+[OK]
+Switch(config-if)#
+Switch(config-if)#exit
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+

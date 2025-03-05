@@ -1,0 +1,205 @@
+XYZ company is a fast-growing company in EASTERN AUSTRALIA with more than 2 million customers globally.
+The company deals with selling and buying of food items, which are basically operated from the headquarters.
+The company is intended to open a branch near the local village ABC.
+Thus, the company requires young IT graduates to design the network for the branch.
+The network is intended to operate separately from the HG network.
+
+Being a small network, the company has the following requirements during implementation;
+
+a. one router and one switch to be used(all CISCO products).
+b. 3 departments(ADMIN/IT, FINANCE/HR and CUSTOMER SERVICE/RECEPTION)
+c. Each department is require to be in different VLANS.(As 3 departments are in different vlan they will not be communicating with each other, for communication b/w different vlans we
+ need to implement inter vlan routing.) 
+d. Each department is required to have wireless network for the users.(means in every department we need to have wireless access point to provide wi-fi)
+e. host devices in the network are required to obtain IPV$ address automatically.(basically configure DHCP and use the router as a dhcp server)
+f. Devices in all the department are required to communicate with each other.
+assume the ISP gave out a base network of 192.168.1.0, you as a young network engineer who has been hired, design and implement a network considering the above requirements.
+
+
+
+
+base network: 192.168.1.0
+no of subnet needed: 3
+so no of subnets = 2^n
+here 2^n=3==>>n=2
+as it is a class c network
+
+255.255.255.0==>>11111111 11111111 11111111 00000000
+
+as n=2
+we have to borrow 2 network bits, so new binary = 11111111 11111111 11111111 11000000==>> 255.255.255.192== new subnetmask
+
+
+block size = 64
+1st subnet
+network id:192.168.1.0
+broadcast id:192.168.1.63
+host range:192.168.1.1-192.168.1.62
+
+2nd subnet
+network id:192.168.1.64
+broadcast id:192.168.1.127
+host range:192.168.1.65-192.168.1.126
+
+3rd subnet
+network id:192.168.1.128
+broadcast id:192.168.1.191
+host range:192.168.1.129-192.1681.190
+
+
+
+VLAN configuration:
+Switch>
+Switch>en
+Switch#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Switch(config)#int range fa0/2-0/4
+                               ^
+% Invalid input detected at '^' marker.
+	
+Switch(config)#int range fa0/2-4
+Switch(config-if-range)#switchport mode access
+Switch(config-if-range)#switchport access vlan 20
+% Access VLAN does not exist. Creating vlan 20
+Switch(config-if-range)#int range fa0/5-7
+Switch(config-if-range)#switchport mode access
+Switch(config-if-range)#switchport access vlan 40
+% Access VLAN does not exist. Creating vlan 40
+Switch(config-if-range)#int range fa0/8-10
+Switch(config-if-range)#switchport mode access
+Switch(config-if-range)#switchport access vlan 60
+% Access VLAN does not exist. Creating vlan 60
+Switch(config-if-range)#exit
+Switch(config)#do wr
+Building configuration...
+[OK]
+
+
+wireless access point configuration:
+
+# configure password and ssid(name)
+
+
+
+trunk interface allows passage  multiple vlan
+so we need to configure switchport mode trunk on fa0/1
+Switch#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Switch(config)#int fa0/1
+Switch(config-if)#switchport mode trunk
+Switch(config-if)#do wr
+Building configuration...
+[OK]
+Switch(config-if)#
+Switch(config-if)#exit
+Switch(config)#
+
+router configs:
+
+now we have to configure the inter vlan and dhcp server.
+
+inter vlan routing: to configure inter vlan routing we have to we create multiple sub interfaces from a single physical interface.
+
+There are three options available in order to enable routing between the VLANs:
+Router with a Separate Physical Interface in each VLAN.
+Router with a Sub-Interface in each VLAN.
+Utilizing a Layer 3 Switch
+
+
+here from gig0/0 we will create 3 sub interfaces as we have 3 vlans to communicate for that we have to assign ip addresses to those sub interfaces that will act as default gateway to the respective VLANs.
+
+first thing is to create sub-interfaces:
+
+after creating sub interfaces the most important part is to specify encapsulation dot1q vlan number
+then add ip addresses to those respective VLANs.
+
+
+Router(config)#
+Router(config)#
+Router(config)#
+Router(config)#int gig0/0.20
+Router(config-subif)#
+%LINK-5-CHANGED: Interface GigabitEthernet0/0.20, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0.20, changed state to up
+
+Router(config-subif)#encapsulation dot1q 20
+Router(config-subif)#ip address 192.168.1.1 255.255.255.192
+Router(config-subif)#ex
+Router(config)#int gig0/0.40
+Router(config-subif)#
+%LINK-5-CHANGED: Interface GigabitEthernet0/0.40, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0.40, changed state to up
+
+Router(config-subif)#encapsulation dot1q 40
+Router(config-subif)#ip address 192.168.1.65 255.255.255.192
+Router(config-subif)#ex
+Router(config)#int gig0/0.60
+Router(config-subif)#
+%LINK-5-CHANGED: Interface GigabitEthernet0/0.60, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0.60, changed state to up
+
+Router(config-subif)#encapsulation dot1q 60
+Router(config-subif)#ip address 192.168.1.129 255.255.255.192
+Router(config-subif)#exit
+Router(config)#do wr mem
+Building configuration...
+[OK]
+
+
+
+
+to enable dhcp server on router:
+
+service dhcp
+
+
+
+Router>en
+Router#
+Router#config t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Router(config)#service dhcp
+Router(config)#ip dhcp pool Admin-Pool
+Router(dhcp-config)#network 192.168.1.0 255.255.255.192
+Router(dhcp-config)#default-
+Router(dhcp-config)#default-router 192.168.1.1
+Router(dhcp-config)#dns-
+Router(dhcp-config)#dns-server 192.168.1.1
+Router(dhcp-config)#domain-
+Router(dhcp-config)#domain-name Admin.com
+Router(dhcp-config)#exit
+Router(config)#ip dhcp pool Finance-Pool
+Router(dhcp-config)#network 192.168.1.64 255.255.255.192
+Router(dhcp-config)#default-router 192.168.1.65
+Router(dhcp-config)#dns-server 192.168.1.65
+Router(dhcp-config)#domain-name Finance.com
+Router(dhcp-config)#exit
+Router(config)#ip dhcp pool Reception-Pool
+Router(dhcp-config)#network 192.168.1.128 255.255.255.192
+Router(dhcp-config)#default-router 192.168.1.129
+Router(dhcp-config)#dns-server 192.168.1.129
+Router(dhcp-config)#domain-name Reception.com
+Router(dhcp-config)#
+Router(dhcp-config)#exit
+Router(config)#do wr
+Building configuration...
+[OK]
+Router(config)#
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
