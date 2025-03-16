@@ -1,0 +1,500 @@
+Coursework Brief
+ABC University is a large university which has two campuses situated 20 miles apart. The university's students and staff are distributed in 4 faculties; these include the faculties of Health and Sciences; Business; Engineering/Computing and Art/Design. Each member of staff has a PC and students have access to PCs in the labs. 
+Requirements: 
+Create a network topology with the main components to support the following: 
+a. Main campus: 
+○ Building A: Administrative staff in the departments of management, HR and finance. The admin staff PCs are distributed in the building offices and it is expected that they will share some networking equipment (Hint: use of VLANs is expected here). The Faculty of Business is also situated in this building.
+ 
+Building B: Faculty of Engineering and Computing and Faculty of Art and Design
+ 
+Building C: Students labs and T department. The IT department hosts the University Web server and other servers 
+○ There is also an email server hosted externally on the cloud.
+ 
+Smaller campus: 
+○ Faculty of Health and Sciences (staff and students labs are situated on separate floors) 
+
+b. You will be expected to configure the core devices and few end devices to provide end-to-end connectivity and access to the internal servers and the external server. 
+• Each department/ faculty is expected to be on its own separate IP network 
+• The switches should be configured with appropriate VLANs and security settings 
+• RiPv2 will be used to provide routing for the routers in the internal network and static routing for the external server. 
+. The devices in building A will be expected to acquire dynamic IP addresses from a router-based DHCP server 
+
+Tasks:
+Task 1: Your task is to plan, design, and prototype the network topology for Albion University's
+network using Cisco Packet Tracer.
+
+
+Task 2: Configure in Packet Tracer the network with appropriate settings to achieve the
+connectivity and functionalities specified in the requirements.
+
+
+solution:
+
+hierarchical model: core layer + distribution layer + access layer
+                 router/l3 switch
+                                   electric switch
+                                                   end devices
+
+Hierarchical Network Design 🏗️
+A hierarchical network design is a structured approach to designing networks that improves scalability, performance, security, and manageability. It follows a layered model where different functions of the network are distributed across three layers.
+
+1. The Three Layers of Hierarchical Network Design
+🔹 Core Layer (High-Speed Backbone)
+Provides fast and reliable transport between distribution layers.
+Focuses on speed, redundancy, and low latency.
+No access control or packet filtering occurs here.
+Devices: High-speed routers and Layer 3 switches.
+💡 Example:
+
+Large backbone switches interconnecting buildings in a campus network.
+🔹 Distribution Layer (Policy & Traffic Control)
+Connects the access layer to the core layer.
+Implements routing, filtering, and security policies.
+Aggregates traffic from access switches.
+VLANs and inter-VLAN routing occur here.
+Devices: Layer 3 switches, routers.
+💡 Example:
+
+A Layer 3 switch performing inter-VLAN routing and QoS (Quality of Service) policies.
+🔹 Access Layer (End-User Connection)
+Provides connectivity to end devices (PCs, printers, phones, IoT).
+Uses Layer 2 switches (sometimes Layer 3 for small networks).
+Controls port security, VLANs, PoE (Power over Ethernet).
+Devices: Access switches, wireless access points.
+💡 Example:
+
+Edge switches connecting PCs, printers, and Wi-Fi APs in an office.
+2. Why Use a Hierarchical Design?
+✅ Scalability – Easier to expand by adding devices at the appropriate layer.
+✅ Performance – Faster data flow by reducing congestion.
+✅ Redundancy – Core layer provides multiple paths for failover.
+✅ Security – Policies (ACLs, VLANs, firewalls) are easier to implement.
+✅ Manageability – Modular design simplifies troubleshooting and upgrades.
+
+3. Real-World Example: Enterprise Network
+Imagine a large corporate office:
+
+Core Layer: High-speed backbone switches interconnecting data centers and buildings.
+Distribution Layer: Layer 3 switches handling VLAN routing and traffic filtering.
+Access Layer: Edge switches connecting PCs, phones, and Wi-Fi APs.
+4. How Does It Relate to VLANs & Inter-VLAN Routing?
+Access Layer: Assigns devices to VLANs.
+Distribution Layer: Handles inter-VLAN routing using Layer 3 switches.
+Core Layer: Provides high-speed transport for routed traffic.
+
+
+configurational part:
+
+first make the router interfaces up : no shut
+
+Router>
+Router>en
+Router#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Router(config)#int gig0/0
+Router(config-if)#no sh
+
+Router(config-if)#
+%LINK-5-CHANGED: Interface GigabitEthernet0/0, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0, changed state to up
+
+Router(config-if)#ex
+Router(config)#int se0/0/0
+Router(config-if)#no sh
+
+%LINK-5-CHANGED: Interface Serial0/0/0, changed state to down
+Router(config-if)#ex
+Router(config)#int se0/0/1
+Router(config-if)#no sh
+
+%LINK-5-CHANGED: Interface Serial0/0/1, changed state to down
+Router(config-if)#ex
+Router(config)#do wr mem
+Building configuration...
+[OK]
+Router(config)#
+%LINK-5-CHANGED: Interface Serial0/0/0, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface Serial0/0/0, changed state to up
+
+%LINK-5-CHANGED: Interface Serial0/0/1, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface Serial0/0/1, changed state to up
+
+
+
+Add clock rate to the serial DCE cable to enable traffic flows through those interfaces.
+
+Router(config)#int se0/0/0
+Router(config-if)#clock rate 64000
+Router(config-if)#ex
+Router(config)#int se0/0/1
+Router(config-if)#clock rate 64000
+
+
+VLAN configuration on access layer switches:
+
+
+int range fa0/1-24
+switchport mode access
+switchport access vlan 100
+ex
+do wr
+
+
+on l3 switchs interface with respect to the respective VLANs.
+int gig1/0/3
+switchport mode access
+switchport access vlan 20
+ex
+int gig1/0/4
+switchport mode access
+switchport access vlan 30
+ex
+int gig1/0/5
+switchport mode access
+switchport access vlan 40
+ex
+int gig1/0/6
+switchport mode access
+switchport access vlan 50
+ex
+int gig1/0/7
+switchport mode access
+switchport access vlan 60
+ex
+int gig1/0/8
+switchport mode access
+switchport access vlan 70
+ex
+int gig1/0/9
+switchport mode access
+switchport access vlan 80
+ex
+
+
+an accessport cannot access more than one vlan so we have to make the l3 switch connected to the router interface as a trunk port
+switchport trunk encapsulation dot1q → Specifies 802.1Q tagging (not needed on newer IOS versions).
+
+
+then go to the core layer configuration(routers):
+provide ip address on router interfaces:
+Router>en
+Router#config t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Router(config)#int se0/0/0
+Router(config-if)#ip address 10.10.10.9 255.255.255.252
+Router(config-if)#ex
+Router(config)#int se0/0/1
+Router(config-if)#ip address 10.10.10.5 255.255.255.252
+Router(config-if)#ex
+Router(config)#
+
+Router#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Router(config)#int se0/0/0
+Router(config-if)#ip address 10.10.10.6 255.255.255.252
+Router(config-if)#ex
+	
+Router(config)#do wr mem
+
+
+Router>en
+Router#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Router(config)#int se0/0/0
+Router(config-if)#ip address 10.10.10.10 255.255.255.252
+Router(config-if)#ex
+Router(config)#int gig0/0
+Router(config-if)#ip address 20.0.0.1 255.255.255.252
+Router(config-if)#exit
+Router(config)#
+
+inter vlan routing on branch router:
+Router(config)#
+Router(config)#int gig0/0.90
+Router(config-subif)#
+%LINK-5-CHANGED: Interface GigabitEthernet0/0.90, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0.90, changed state to up
+
+Router(config-subif)#encapsulation dot1q 90
+Router(config-subif)#ip address 192.168.9.1 255.255.255.0
+Router(config-subif)#int gig0/0.100
+Router(config-subif)#
+%LINK-5-CHANGED: Interface GigabitEthernet0/0.100, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0.100, changed state to up
+
+Router(config-subif)#encapsulation dot1q 100
+Router(config-subif)#ip address 192.168.10.1 255.255.255.0
+Router(config-subif)#ex
+Router(config)#do wr mem
+Building configuration...
+[OK]
+Router(config)#
+
+
+DHCP configuration on the branch router:
+
+Router(config)#
+Router(config)#service dhcp
+Router(config)#ip dhcp pool staff-pool
+Router(dhcp-config)#network 192.168.9.0 255.255.255.0
+Router(dhcp-config)#default-router 192.168.9.1
+Router(dhcp-config)#dns-server 192.168.9.1
+Router(dhcp-config)#ex
+Router(config)#ip dhcp pool StudentLAB2-pool
+Router(dhcp-config)#network 192.168.10.0 255.255.255.0
+Router(dhcp-config)#default-router 192.168.10.1
+Router(dhcp-config)#dns-server 192.168.10.1
+Router(dhcp-config)#
+Router(dhcp-config)#ex
+Router(config)#do wr
+Building configuration...
+[OK]
+Router(config)#
+
+
+
+configs of inter vlan routing and creating dhcp pool on main campus router:
+
+
+Router>
+Router>
+Router>en
+Router#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Router(config)#int gig0/0.10
+Router(config-subif)#
+%LINK-5-CHANGED: Interface GigabitEthernet0/0.10, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0.10, changed state to up
+
+Router(config-subif)#encapsulation dot1q 10
+Router(config-subif)#ip address 192.168.1.1 255.255.255.0
+Router(config-subif)#ex
+Router(config)#int gig0/0.20
+Router(config-subif)#
+%LINK-5-CHANGED: Interface GigabitEthernet0/0.20, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0.20, changed state to up
+
+Router(config-subif)#encapsulation dot1q 20
+Router(config-subif)#ip address 192.168.2.1 255.255.255.0
+Router(config-subif)#ex
+Router(config)#int gig0/0.30
+Router(config-subif)#
+%LINK-5-CHANGED: Interface GigabitEthernet0/0.30, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0.30, changed state to up
+
+Router(config-subif)#encapsulation dot1q 30
+Router(config-subif)#ip address 192.168.3.1 255.255.255.0
+Router(config-subif)#ex
+Router(config)#int gig0/0.40
+Router(config-subif)#
+%LINK-5-CHANGED: Interface GigabitEthernet0/0.40, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0.40, changed state to up
+
+Router(config-subif)#encapsulation dot1q 40
+Router(config-subif)#ip address 192.168.4.1 255.255.255.0
+Router(config-subif)#ex
+Router(config)#int gig0/0.50
+Router(config-subif)#
+%LINK-5-CHANGED: Interface GigabitEthernet0/0.50, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0.50, changed state to up
+
+Router(config-subif)#encapsulation dot1q 50
+Router(config-subif)#ip address 192.168.5.1 255.255.255.0
+Router(config-subif)#ex
+Router(config)#int gig0/0.60
+Router(config-subif)#
+%LINK-5-CHANGED: Interface GigabitEthernet0/0.60, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0.60, changed state to up
+
+Router(config-subif)#encapsulation dot1q 60
+Router(config-subif)#ip address 192.168.6.1 255.255.255.0
+Router(config-subif)#ex
+Router(config)#int gig0/0.70
+Router(config-subif)#
+%LINK-5-CHANGED: Interface GigabitEthernet0/0.70, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0.70, changed state to up
+
+Router(config-subif)#encapsulation dot1q 70
+Router(config-subif)#ip address 192.168.7.1 255.255.255.0
+Router(config-subif)#ex
+Router(config)#int gig0/0.80
+Router(config-subif)#
+%LINK-5-CHANGED: Interface GigabitEthernet0/0.80, changed state to up
+
+%LINEPROTO-5-UPDOWN: Line protocol on Interface GigabitEthernet0/0.80, changed state to up
+
+Router(config-subif)#encapsulation dot1q 80
+Router(config-subif)#ip address 192.168.8.1 255.255.255.0
+Router(config-subif)#ex
+Router(config)#
+Router(config)#
+Router(config)#service dhcp
+Router(config)#ip dhcp pool management
+Router(dhcp-config)#network 192.168.1.0 255.255.255.0
+Router(dhcp-config)#default-router 192.168.1.1
+Router(dhcp-config)#dns-server 192.168.1.1
+Router(dhcp-config)#ex
+Router(config)#ip dhcp pool HR
+Router(dhcp-config)#network 192.168.2.0 255.255.255.0
+Router(dhcp-config)#default-router 192.168.2.1
+Router(dhcp-config)#dns-server 192.168.2.1
+Router(dhcp-config)#ex
+Router(config)#ip dhcp pool Finance
+Router(dhcp-config)#network 192.168.3.0 255.255.255.0
+Router(dhcp-config)#default-router 192.168.3.1
+Router(dhcp-config)#dns-server 192.168.3.1
+Router(dhcp-config)#ex
+Router(config)#ip dhcp pool Business
+Router(dhcp-config)#network 192.168.4.0 255.255.255.0
+Router(dhcp-config)#default-router 192.168.4.1
+Router(dhcp-config)#dns-server 192.168.4.1
+Router(dhcp-config)#ex
+Router(config)#ip dhcp pool Faculty of E&C
+                                    ^
+% Invalid input detected at '^' marker.
+	
+Router(config)#ip dhcp pool Faculty of EC
+                                    ^
+% Invalid input detected at '^' marker.
+	
+Router(config)#ip dhcp pool FacultyofEC
+Router(dhcp-config)#network 192.168.5.0 255.255.255.0
+Router(dhcp-config)#default-router 192.168.5.1
+Router(dhcp-config)#dns-server 192.168.5.1
+Router(dhcp-config)#ex
+Router(config)#ip dhcp pool FacultyofAD
+Router(dhcp-config)#network 192.168.6.0 255.255.255.0
+Router(dhcp-config)#default-router 192.168.6.1
+Router(dhcp-config)#dns-server 192.168.6.1
+Router(dhcp-config)#ex
+Router(config)#ip dhcp pool StudentLAB
+Router(dhcp-config)#network 192.168.7.0 255.255.255.0
+Router(dhcp-config)#default-router 192.168.7.1
+Router(dhcp-config)#dns-server 192.168.7.1
+Router(dhcp-config)#ex
+Router(config)#ip dhcp pool IT DEPT.
+                               ^
+% Invalid input detected at '^' marker.
+	
+Router(config)#ip dhcp pool ITDEPT.
+Router(dhcp-config)#network 192.168.8.0 255.255.255.0
+Router(dhcp-config)#default-router 192.168.8.1
+Router(dhcp-config)#dns-server 192.168.8.1
+Router(dhcp-config)#ex
+Router(config)#do wr mem
+Building configuration...
+[OK]
+Router(config)#
+
+
+
+implementing the routing protocol(RIP):
+
+RIP in branch router:
+
+Router>en
+Router#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Router(config)#router rip
+Router(config-router)#version 2
+Router(config-router)#network 192.168.9.0
+Router(config-router)#network 192.168.10.0
+Router(config-router)#network 10.10.10.4
+Router(config-router)#ex
+Router(config)#do wr
+Building configuration...
+[OK]
+Router(config)#
+
+
+on main router:
+
+Router>en
+Router#config t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Router(config)#router rip
+Router(config-router)#version 2
+Router(config-router)#network 192.168.1.0
+Router(config-router)#
+Router(config-router)#network 192.168.2.0
+Router(config-router)#network 192.168.3.0
+Router(config-router)#network 192.168.4.0
+Router(config-router)#network 192.168.5.0
+Router(config-router)#network 192.168.6.0
+Router(config-router)#network 192.168.7.0
+Router(config-router)#network 192.168.8.0
+Router(config-router)#network 10.10.10.4
+Router(config-router)#network 10.10.10.8
+Router(config-router)#ex
+Router(config)#do wr
+Building configuration...
+[OK]
+
+on cloud router:
+
+Router>en
+Router#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+Router(config)#router rip
+Router(config-router)#rip version 2
+                       ^
+% Invalid input detected at '^' marker.
+	
+Router(config-router)#version 2
+Router(config-router)#network 10.10.10.8
+Router(config-router)#network 20.0.0.0
+Router(config-router)#ex
+Router(config)#o wr
+               ^
+% Invalid input detected at '^' marker.
+	
+Router(config)#do wr
+Building configuration...
+[OK]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
